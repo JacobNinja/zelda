@@ -53,4 +53,5 @@
 
 (defn init [draw]
   (init-window)
-  (draw-loop draw))
+  (draw-loop draw)
+  {:dimensions [width height]})

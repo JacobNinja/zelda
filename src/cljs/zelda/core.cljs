@@ -21,6 +21,11 @@
                   (when-let [key (valid-keys (.-keyCode k))]
                     (go (>! keyboard-chan key))))))
 
+(defn- in-bounds? [env coords]
+  (let [[width height] (env :dimensions)
+        [x y] coords]
+    (and (>= x 0) (>= y 0) (< x width) (< y height))))
+
 (defn- adjust-player [env key]
   (let [[x y] (env :player)
         next-coord (condp = key
@@ -29,15 +34,18 @@
                      :up [x (dec y)]
                      :down [x (inc y)]
                      [x y])]
-    (assoc env :player next-coord)))
+    (if (in-bounds? env next-coord)
+      (assoc env :player next-coord)
+      env)))
 
-(defn- init-env []
-  {:player [5 5]
-   :obstacles [[8 8]]})
+(defn- init-env [env]
+  (merge env 
+         {:player [5 5]
+          :obstacles [[8 8]]}))
 
-(defn- game-loop [draw]
+(defn- game-loop [draw initial-env]
   (go
-   (loop [env (init-env)]
+   (loop [env (init-env initial-env)]
      (>! draw env)
      (let [[keyboard-check _] (alts! [keyboard-chan (timeout 1)])
            next-env (-> env
@@ -46,8 +54,8 @@
        (recur next-env)))))
 
 (defn ^:export init []
-  (let [draw-chan (chan)]
-    (zelda.window/init draw-chan)
+  (let [draw-chan (chan)
+        env (zelda.window/init draw-chan)]
     (keyboard-loop)
-    (game-loop draw-chan)))
+    (game-loop draw-chan env)))
 
