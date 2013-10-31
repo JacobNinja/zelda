@@ -21,10 +21,11 @@
                   (when-let [key (valid-keys (.-keyCode k))]
                     (go (>! keyboard-chan key))))))
 
-(defn- in-bounds? [env coords]
-  (let [[width height] (env :dimensions)
-        [x y] coords]
-    (and (>= x 0) (>= y 0) (< x width) (< y height))))
+(defn- in-bounds? [[width height] [x y]]
+  (and (>= x 0) (>= y 0) (< x width) (< y height)))
+
+(defn- collides-with-obstacles? [obstacles coord]
+  (some #(= % coord) obstacles))
 
 (defn- adjust-player [env key]
   (let [[x y] (env :player)
@@ -34,7 +35,8 @@
                      :up [x (dec y)]
                      :down [x (inc y)]
                      [x y])]
-    (if (in-bounds? env next-coord)
+    (if (and (in-bounds? (env :dimensions) next-coord)
+             (not (collides-with-obstacles? (env :obstacles) next-coord)))
       (assoc env :player next-coord)
       env)))
 
