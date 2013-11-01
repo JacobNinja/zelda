@@ -56,9 +56,12 @@
                  sword-size
                  cell-size))))
 
+(defn- heart-image []
+  "<img src='images/heart.png' />")
+
 (defn- fill-hp-meter [hp]
   (set! (.-innerHTML hit-points)
-        (apply str (repeatedly hp #(do "<img src='images/heart.png' />")))))
+        (apply str (repeatedly hp heart-image))))
 
 (defn- init-window []
   (set! (.-width canvas) (* cell-size width))
