@@ -64,6 +64,11 @@
                   :flash (.-coord next-player)}))
     (dissoc env :flash)))
 
+(defn- game-over [env]
+  (if (zero? (.-hp (env :player)))
+    (assoc env :game-over "You died!")
+    env))
+
 (deftype Player [coord hp direction]
   Object
   (tick [this new-direction]
@@ -90,9 +95,11 @@
                         (adjust-key keyboard-check)
                         adjust-player
                         swing-sword
-                        player-collision-check)]
-       (<! (timeout 200))
-       (recur next-env)))))
+                        player-collision-check
+                        game-over)]
+       (if-not (env :game-over)
+         (recur (or (<! (timeout 200)) next-env))
+         (js/alert (str "Game over!" \newline (env :game-over))))))))
 
 (defn ^:export init []
   (let [draw-chan (chan)
