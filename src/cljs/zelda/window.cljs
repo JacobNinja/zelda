@@ -76,7 +76,7 @@
        (fill [(.-coord (env :player))] player-color)
        (fill (env :obstacles) obstacle-color)
        (fill (env :enemies) enemy-color)
-       (fill-hp-meter (env :hp))
+       (fill-hp-meter (.-hp (env :player)))
        (when (env :swing)
          (draw-swing (env :swing) (.-direction (env :player)))))
      (recur))))

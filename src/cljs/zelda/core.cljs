@@ -14,6 +14,10 @@
                  key-codes/UP :up
                  key-codes/DOWN :down
                  key-codes/SPACE :space})
+(def opposite-direction {:left :right
+                         :right :left
+                         :up :down
+                         :down :up})
 
 (defn- keyboard-loop []
   (event/listen keyboard 
@@ -53,20 +57,25 @@
 
 (defn- player-collision-check [env]
   (if-let [player-collisions ((set (env :enemies)) (.-coord (env :player)))]
-    (assoc env :hp (dec (env :hp)))
+    (assoc env :player (-> (env :player)
+                           .tickBackwards
+                           (.hit 1)))
     env))
 
-(deftype Player [coord direction]
+(deftype Player [coord hp direction]
   Object
   (tick [this new-direction]
     (if-let [new-coord (adjust-position coord new-direction)]
-      (Player. new-coord new-direction)
-      this)))
+      (Player. new-coord hp new-direction)
+      this))
+  (tickBackwards [this]
+    (.tick this (opposite-direction direction)))
+  (hit [this amount]
+    (Player. coord (- hp amount) direction)))
 
 (defn- init-env [env]
   (merge env 
-         {:player (Player. [5 5] nil)
-          :hp 3
+         {:player (Player. [5 5] 3 nil)
           :obstacles [[8 8]]
           :enemies [[10 10]]}))
 
