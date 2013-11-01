@@ -11,6 +11,7 @@
 (def obstacle-color "#cc0000")
 
 (def cell-size 60)
+(def sword-size (/ cell-size 6))
 (def height (int (/ (.-innerHeight js/window) cell-size)))
 (def width (int (/ (.-innerWidth js/window) cell-size)))
 
@@ -37,6 +38,22 @@
           y (range height)]
     (fill-square x y empty-color)))
 
+(defn- draw-swing [coords direction]
+  (let [offset (- (/ cell-size 2) (/ sword-size 2))
+        [window-x window-y] (map #(* cell-size %) coords)]
+    (set! (.-fillStyle context) player-color)
+    (if (#{:left :right} direction)
+      (.fillRect context
+                 window-x
+                 (+ window-y offset)
+                 cell-size
+                 sword-size)
+      (.fillRect context
+                 (+ window-x offset)
+                 window-y
+                 sword-size
+                 cell-size))))
+
 (defn- init-window []
   (set! (.-width canvas) (* cell-size width))
   (set! (.-height canvas) (* cell-size height))
@@ -48,7 +65,9 @@
      (let [env (<! draw)]
        (fill-empty)
        (fill [(env :player)] player-color)
-       (fill (env :obstacles) obstacle-color))
+       (fill (env :obstacles) obstacle-color)
+       (when (env :swing)
+         (draw-swing (env :swing) (env :direction))))
      (recur))))
 
 (defn init [draw]

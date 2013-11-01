@@ -12,7 +12,8 @@
 (def valid-keys {key-codes/LEFT :left
                  key-codes/RIGHT :right
                  key-codes/UP :up
-                 key-codes/DOWN :down})
+                 key-codes/DOWN :down
+                 key-codes/SPACE :space})
 
 (defn- keyboard-loop []
   (event/listen keyboard 
@@ -27,18 +28,30 @@
 (defn- collides-with-obstacles? [obstacles coord]
   (some #(= % coord) obstacles))
 
-(defn- adjust-player [env key]
-  (let [[x y] (env :player)
-        next-coord (condp = key
-                     :right [(inc x) y]
-                     :left [(dec x) y]
-                     :up [x (dec y)]
-                     :down [x (inc y)]
-                     [x y])]
-    (if (and (in-bounds? (env :dimensions) next-coord)
+(defn- adjust-position [[x y] direction]
+  (condp = direction
+    :right [(inc x) y]
+    :left [(dec x) y]
+    :up [x (dec y)]
+    :down [x (inc y)]
+    nil))
+
+(defn- adjust-player [env]
+  (let [next-coord (adjust-position (env :player) (env :key))]
+    (if (and next-coord
+             (in-bounds? (env :dimensions) next-coord)
              (not (collides-with-obstacles? (env :obstacles) next-coord)))
-      (assoc env :player next-coord)
+      (merge env {:player next-coord
+                  :direction (env :key)})
       env)))
+
+(defn- swing-sword [env]
+  (if (= (env :key) :space)
+    (assoc env :swing (adjust-position (env :player) (env :direction)))
+    (dissoc env :swing)))
+
+(defn- adjust-key [env keyboard-check]
+  (assoc env :key keyboard-check))
 
 (defn- init-env [env]
   (merge env 
@@ -51,7 +64,9 @@
      (>! draw env)
      (let [[keyboard-check _] (alts! [keyboard-chan (timeout 1)])
            next-env (-> env
-                        (adjust-player keyboard-check))]
+                        (adjust-key keyboard-check)
+                        adjust-player
+                        swing-sword)]
        (<! (timeout 200))
        (recur next-env)))))
 
