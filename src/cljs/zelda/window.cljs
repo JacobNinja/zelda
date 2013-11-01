@@ -9,6 +9,7 @@
 (def empty-color "#eee")
 (def player-color "#000000")
 (def obstacle-color "#cc0000")
+(def enemy-color "0000ff")
 
 (def cell-size 60)
 (def sword-size (/ cell-size 6))
@@ -66,6 +67,7 @@
        (fill-empty)
        (fill [(env :player)] player-color)
        (fill (env :obstacles) obstacle-color)
+       (fill (env :enemies) enemy-color)
        (when (env :swing)
          (draw-swing (env :swing) (env :direction))))
      (recur))))

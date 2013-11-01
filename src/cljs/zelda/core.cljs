@@ -56,7 +56,8 @@
 (defn- init-env [env]
   (merge env 
          {:player [5 5]
-          :obstacles [[8 8]]}))
+          :obstacles [[8 8]]
+          :enemies [[10 10]]}))
 
 (defn- game-loop [draw initial-env]
   (go
