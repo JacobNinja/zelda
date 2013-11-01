@@ -73,12 +73,12 @@
    (loop []
      (let [env (<! draw)]
        (fill-empty)
-       (fill [(env :player)] player-color)
+       (fill [(.-coord (env :player))] player-color)
        (fill (env :obstacles) obstacle-color)
        (fill (env :enemies) enemy-color)
        (fill-hp-meter (env :hp))
        (when (env :swing)
-         (draw-swing (env :swing) (env :direction))))
+         (draw-swing (env :swing) (.-direction (env :player)))))
      (recur))))
 
 (defn init [draw]

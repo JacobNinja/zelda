@@ -37,30 +37,35 @@
     nil))
 
 (defn- adjust-player [env]
-  (let [next-coord (adjust-position (env :player) (env :key))]
-    (if (and next-coord
-             (in-bounds? (env :dimensions) next-coord)
-             (not (collides-with-obstacles? (env :obstacles) next-coord)))
-      (merge env {:player next-coord
-                  :direction (env :key)})
+  (let [next-player (.tick (env :player) (env :key))]
+    (if (and (in-bounds? (env :dimensions) (.-coord next-player))
+             (not (collides-with-obstacles? (env :obstacles) (.-coord next-player))))
+      (assoc env :player next-player)
       env)))
 
 (defn- swing-sword [env]
   (if (= (env :key) :space)
-    (assoc env :swing (adjust-position (env :player) (env :direction)))
+    (assoc env :swing (adjust-position (.-coord (env :player)) (.-direction (env :player))))
     (dissoc env :swing)))
 
 (defn- adjust-key [env keyboard-check]
   (assoc env :key keyboard-check))
 
 (defn- player-collision-check [env]
-  (if-let [player-collisions ((set (env :enemies)) (env :player))]
+  (if-let [player-collisions ((set (env :enemies)) (.-coord (env :player)))]
     (assoc env :hp (dec (env :hp)))
     env))
 
+(deftype Player [coord direction]
+  Object
+  (tick [this new-direction]
+    (if-let [new-coord (adjust-position coord new-direction)]
+      (Player. new-coord new-direction)
+      this)))
+
 (defn- init-env [env]
   (merge env 
-         {:player [5 5]
+         {:player (Player. [5 5] nil)
           :hp 3
           :obstacles [[8 8]]
           :enemies [[10 10]]}))
