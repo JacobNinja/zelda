@@ -11,13 +11,14 @@
 (def player-color "#000000")
 (def obstacle-color "#cc0000")
 (def enemy-color "0000ff")
+(def flash-color "#fff000")
 
 (def cell-size 60)
 (def sword-size (/ cell-size 6))
 (def height (int (/ (.-innerHeight js/window) cell-size)))
 (def width (int (/ (.-innerWidth js/window) cell-size)))
 
-(defn- fill-square [x y color]
+(defn- fill-square [[x y] color]
   (set! (.-fillStyle context) color)
   (set! (.-strokeStyle context) border-color)
   (.fillRect context
@@ -32,13 +33,13 @@
                cell-size))
 
 (defn- fill [coords color]
-  (doseq [[x y] coords]
-    (fill-square x y color)))
+  (doseq [coord coords]
+    (fill-square coord color)))
 
 (defn- fill-empty []
   (doseq [x (range width)
           y (range height)]
-    (fill-square x y empty-color)))
+    (fill-square [x y] empty-color)))
 
 (defn- draw-swing [coords direction]
   (let [offset (- (/ cell-size 2) (/ sword-size 2))
@@ -71,14 +72,16 @@
 (defn- draw-loop [draw]
   (go
    (loop []
-     (let [env (<! draw)]
+     (let [{:keys [flash swing player obstacles enemies]} (<! draw)]
        (fill-empty)
-       (fill [(.-coord (env :player))] player-color)
-       (fill (env :obstacles) obstacle-color)
-       (fill (env :enemies) enemy-color)
-       (fill-hp-meter (.-hp (env :player)))
-       (when (env :swing)
-         (draw-swing (env :swing) (.-direction (env :player)))))
+       (fill [(.-coord player)] player-color)
+       (fill obstacles obstacle-color)
+       (fill enemies enemy-color)
+       (fill-hp-meter (.-hp player))
+       (when flash
+         (fill-square flash flash-color))
+       (when swing
+         (draw-swing swing (.-direction player))))
      (recur))))
 
 (defn init [draw]

@@ -57,10 +57,12 @@
 
 (defn- player-collision-check [env]
   (if-let [player-collisions ((set (env :enemies)) (.-coord (env :player)))]
-    (assoc env :player (-> (env :player)
+    (let [next-player (-> (env :player)
                            .tickBackwards
-                           (.hit 1)))
-    env))
+                           (.hit 1))]
+      (merge env {:player next-player
+                  :flash (.-coord next-player)}))
+    (dissoc env :flash)))
 
 (deftype Player [coord hp direction]
   Object
@@ -75,7 +77,7 @@
 
 (defn- init-env [env]
   (merge env 
-         {:player (Player. [5 5] 3 nil)
+         {:player (Player. [5 5] 3 :right)
           :obstacles [[8 8]]
           :enemies [[10 10]]}))
 
