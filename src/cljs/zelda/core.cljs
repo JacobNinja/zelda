@@ -53,6 +53,11 @@
 (defn- adjust-key [env keyboard-check]
   (assoc env :key keyboard-check))
 
+(defn- player-collision-check [env]
+  (if-let [player-collisions ((set (env :enemies)) (env :player))]
+    (assoc env :hp (dec (env :hp)))
+    env))
+
 (defn- init-env [env]
   (merge env 
          {:player [5 5]
@@ -68,7 +73,8 @@
            next-env (-> env
                         (adjust-key keyboard-check)
                         adjust-player
-                        swing-sword)]
+                        swing-sword
+                        player-collision-check)]
        (<! (timeout 200))
        (recur next-env)))))
 
