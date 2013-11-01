@@ -9,6 +9,7 @@
    [:head {:title "Zelda"}
     [:body {:onload "zelda.core.init();"}
      [:div
+      [:span {:id "hit-points"}]
       [:canvas#world {:width 400 :height 400}]
       [:script {:src "js/dev.js"}]]]]))
 

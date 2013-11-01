@@ -56,6 +56,7 @@
 (defn- init-env [env]
   (merge env 
          {:player [5 5]
+          :hp 3
           :obstacles [[8 8]]
           :enemies [[10 10]]}))
 

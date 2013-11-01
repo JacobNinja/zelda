@@ -4,6 +4,7 @@
 
 (def canvas (.getElementById js/document "world"))
 (def context (.getContext canvas "2d"))
+(def hit-points (.getElementById js/document "hit-points"))
 
 (def border-color "#cdcdcd")
 (def empty-color "#eee")
@@ -55,6 +56,10 @@
                  sword-size
                  cell-size))))
 
+(defn- fill-hp-meter [hp]
+  (set! (.-innerHTML hit-points)
+        (apply str (repeatedly hp #(do "<img src='images/heart.png' />")))))
+
 (defn- init-window []
   (set! (.-width canvas) (* cell-size width))
   (set! (.-height canvas) (* cell-size height))
@@ -68,6 +73,7 @@
        (fill [(env :player)] player-color)
        (fill (env :obstacles) obstacle-color)
        (fill (env :enemies) enemy-color)
+       (fill-hp-meter (env :hp))
        (when (env :swing)
          (draw-swing (env :swing) (env :direction))))
      (recur))))
