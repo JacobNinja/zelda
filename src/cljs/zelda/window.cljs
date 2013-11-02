@@ -75,7 +75,7 @@
    (loop []
      (let [{:keys [flash strike player obstacles enemies enemy-flash]} (<! draw)]
        (fill-empty)
-       (fill [(.-coord player)] player-color)
+       (fill-square (.-coord player) player-color)
        (fill obstacles obstacle-color)
        (fill enemies enemy-color)
        (fill-hp-meter (.-hp player))
