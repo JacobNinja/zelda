@@ -84,7 +84,9 @@
       (Player. new-coord hp new-direction)
       this))
   (tickBackwards [this]
-    (.tick this (opposite-direction direction)))
+    (if-let [back-coord (adjust-position coord (opposite-direction direction))]
+      (Player. back-coord hp direction)
+      this))
   (hit [this amount]
     (Player. coord (- hp amount) direction)))
 
