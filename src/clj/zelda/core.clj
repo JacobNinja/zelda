@@ -6,12 +6,13 @@
 
 (def page
   (html
-   [:head {:title "Zelda"}
-    [:body {:onload "zelda.core.init();"}
-     [:div
-      [:span {:id "hit-points"}]
-      [:canvas#world {:width 400 :height 400}]
-      [:script {:src "js/dev.js"}]]]]))
+   [:head {:title "Zelda"}]
+   [:body {:onload "zelda.core.init();"}
+    [:div
+     [:div {:id "hit-points"}
+      [:img {:src "images/heart.png"}]]
+     [:canvas#world]
+     [:script {:src "js/dev.js"}]]]))
 
 (defroutes app-routes
   (GET "/" [] page)

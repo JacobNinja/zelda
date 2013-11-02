@@ -13,10 +13,11 @@
 (def enemy-color "0000ff")
 (def flash-color "#fff000")
 
-(def cell-size 60)
+(def height 11)
+(def width 16)
+(def cell-size 
+  (- (/ (- (.-innerHeight js/window) (.-offsetHeight hit-points)) height) 2))
 (def sword-size (/ cell-size 6))
-(def height (dec (int (/ (.-innerHeight js/window) cell-size))))
-(def width (int (/ (.-innerWidth js/window) cell-size)))
 
 (defn- fill-square [[x y] color]
   (set! (.-fillStyle context) color)
