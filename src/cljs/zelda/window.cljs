@@ -41,7 +41,7 @@
           y (range height)]
     (fill-square [x y] empty-color)))
 
-(defn- draw-swing [coords direction]
+(defn- draw-strike [coords direction]
   (let [offset (- (/ cell-size 2) (/ sword-size 2))
         [window-x window-y] (map #(* cell-size %) coords)]
     (set! (.-fillStyle context) player-color)
@@ -72,7 +72,7 @@
 (defn- draw-loop [draw]
   (go
    (loop []
-     (let [{:keys [flash swing player obstacles enemies]} (<! draw)]
+     (let [{:keys [flash strike player obstacles enemies enemy-flash]} (<! draw)]
        (fill-empty)
        (fill [(.-coord player)] player-color)
        (fill obstacles obstacle-color)
@@ -80,8 +80,10 @@
        (fill-hp-meter (.-hp player))
        (when flash
          (fill-square flash flash-color))
-       (when swing
-         (draw-swing swing (.-direction player))))
+       (when enemy-flash
+         (fill enemy-flash flash-color))
+       (when strike
+         (draw-strike strike (.-direction player))))
      (recur))))
 
 (defn init [draw]

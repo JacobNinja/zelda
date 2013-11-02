@@ -4,7 +4,8 @@
             [clojure.browser.event :as event]
             [goog.events.KeyHandler]
             [goog.events.KeyCodes :as key-codes]
-            [zelda.window])
+            [zelda.window]
+            [clojure.set :refer [intersection]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (def keyboard (goog.events.KeyHandler. js/document))
@@ -47,10 +48,10 @@
       (assoc env :player next-player)
       env)))
 
-(defn- swing-sword [env]
+(defn- strike [env]
   (if (= (env :key) :space)
-    (assoc env :swing (adjust-position (.-coord (env :player)) (.-direction (env :player))))
-    (dissoc env :swing)))
+    (assoc env :strike (adjust-position (.-coord (env :player)) (.-direction (env :player))))
+    (dissoc env :strike)))
 
 (defn- adjust-key [env keyboard-check]
   (assoc env :key keyboard-check))
@@ -69,6 +70,13 @@
     (assoc env :game-over "You died!")
     env))
 
+(defn- strike-collision-check [env]
+  (let [swing-collision (intersection (set (env :enemies)) #{(env :strike)})]
+    (if-not (empty? swing-collision)
+      (merge env {:enemies (remove swing-collision (env :enemies))
+                  :enemy-flash swing-collision})
+      (dissoc env :enemy-flash))))
+
 (deftype Player [coord hp direction]
   Object
   (tick [this new-direction]
@@ -84,7 +92,7 @@
   (merge env 
          {:player (Player. [5 5] 3 :right)
           :obstacles [[8 8]]
-          :enemies [[10 10]]}))
+          :enemies [[12 5]]}))
 
 (defn- game-loop [draw initial-env]
   (go
@@ -94,7 +102,8 @@
            next-env (-> env
                         (adjust-key keyboard-check)
                         adjust-player
-                        swing-sword
+                        strike
+                        strike-collision-check
                         player-collision-check
                         game-over)]
        (if-not (env :game-over)
