@@ -15,7 +15,7 @@
 
 (def cell-size 60)
 (def sword-size (/ cell-size 6))
-(def height (int (/ (.-innerHeight js/window) cell-size)))
+(def height (dec (int (/ (.-innerHeight js/window) cell-size))))
 (def width (int (/ (.-innerWidth js/window) cell-size)))
 
 (defn- fill-square [[x y] color]
