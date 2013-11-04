@@ -15,23 +15,21 @@
 
 (def height 11)
 (def width 16)
-(def cell-size 
-  (- (/ (- (.-innerHeight js/window) (.-offsetHeight hit-points)) height) 2))
-(def sword-size (/ cell-size 6))
+(def cell-size (atom nil))
 
 (defn- fill-square [[x y] color]
   (set! (.-fillStyle context) color)
   (set! (.-strokeStyle context) border-color)
   (.fillRect context
-             (* x cell-size)
-             (* y cell-size)
-             cell-size
-             cell-size)
+             (* x @cell-size)
+             (* y @cell-size)
+             @cell-size
+             @cell-size)
   (.strokeRect context
-               (* x cell-size)
-               (* y cell-size)
-               cell-size
-               cell-size))
+               (* x @cell-size)
+               (* y @cell-size)
+               @cell-size
+               @cell-size))
 
 (defn- fill [coords color]
   (doseq [coord coords]
@@ -43,20 +41,21 @@
     (fill-square [x y] empty-color)))
 
 (defn- draw-strike [coords direction]
-  (let [offset (- (/ cell-size 2) (/ sword-size 2))
-        [window-x window-y] (map #(* cell-size %) coords)]
+  (let [sword-size (/ @cell-size 6)
+        offset (- (/ @cell-size 2) (/ sword-size 2))
+        [window-x window-y] (map #(* @cell-size %) coords)]
     (set! (.-fillStyle context) player-color)
     (if (#{:left :right} direction)
       (.fillRect context
                  window-x
                  (+ window-y offset)
-                 cell-size
+                 @cell-size
                  sword-size)
       (.fillRect context
                  (+ window-x offset)
                  window-y
                  sword-size
-                 cell-size))))
+                 @cell-size))))
 
 (defn- heart-image []
   "<img src='images/heart.png' />")
@@ -66,8 +65,8 @@
         (apply str (repeatedly hp heart-image))))
 
 (defn- init-window []
-  (set! (.-width canvas) (* cell-size width))
-  (set! (.-height canvas) (* cell-size height))
+  (set! (.-width canvas) (* @cell-size width))
+  (set! (.-height canvas) (* @cell-size height))
   (fill-empty))  
 
 (defn- draw-loop [draw]
@@ -88,6 +87,9 @@
      (recur))))
 
 (defn init [draw]
+  (reset! cell-size 
+          (- (/ (- (.-innerHeight js/window) 
+                   (.-offsetHeight hit-points)) height) 2))
   (init-window)
   (draw-loop draw)
   {:dimensions [width height]})
