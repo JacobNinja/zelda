@@ -9,8 +9,11 @@
    [:head {:title "Zelda"}]
    [:body {:onload "zelda.core.init();"}
     [:div
-     [:div {:id "hit-points"}
-      [:img {:src "images/heart.png"}]]
+     [:div
+      [:span {:id "hit-points"}
+       [:img {:src "images/heart.png"}]]
+      "&nbsp;"
+      [:span "Inventory: " [:span {:id "inventory"}]]]
      [:canvas#world]
      [:script {:src "js/dev.js"}]]]))
 

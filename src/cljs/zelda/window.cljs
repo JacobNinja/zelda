@@ -5,6 +5,7 @@
 (def canvas (.getElementById js/document "world"))
 (def context (.getContext canvas "2d"))
 (def hit-points (.getElementById js/document "hit-points"))
+(def inventory-html (.getElementById js/document "inventory"))
 
 (def border-color "#cdcdcd")
 (def empty-color "#eee")
@@ -16,6 +17,11 @@
 (def height 11)
 (def width 16)
 (def cell-size (atom nil))
+
+(def images {:heart "heart.png"
+             :sword "sword.png"})
+(defn- image-for [item]
+  (str "<img src='images/" (images item) "' />"))
 
 (defn- fill-square [[x y] color]
   (set! (.-fillStyle context) color)
@@ -57,12 +63,13 @@
                  sword-size
                  @cell-size))))
 
-(defn- heart-image []
-  "<img src='images/heart.png' />")
-
 (defn- fill-hp-meter [hp]
   (set! (.-innerHTML hit-points)
-        (apply str (repeatedly hp heart-image))))
+        (apply str (repeatedly hp #(image-for :heart)))))
+
+(defn- fill-inventory [inventory]
+  (set! (.-innerHTML inventory-html)
+        (apply str (map #(image-for %) inventory))))
 
 (defn- init-window []
   (set! (.-width canvas) (* @cell-size width))
@@ -72,12 +79,14 @@
 (defn- draw-loop [draw]
   (go
    (loop []
-     (let [{:keys [flash strike player obstacles enemies enemy-flash]} (<! draw)]
+     (let [{:keys [flash strike player obstacles enemies enemy-flash
+                   inventory]} (<! draw)]
        (fill-empty)
        (fill-square (.-coord player) player-color)
        (fill obstacles obstacle-color)
        (fill enemies enemy-color)
        (fill-hp-meter (.-hp player))
+       (fill-inventory inventory)
        (when flash
          (fill-square flash flash-color))
        (when enemy-flash

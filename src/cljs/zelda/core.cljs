@@ -93,6 +93,7 @@
 (defn- init-env [env]
   (merge env 
          {:player (Player. [5 5] 3 :right)
+          :inventory [:sword]
           :obstacles [[8 8]]
           :enemies [[12 5]]}))
 
