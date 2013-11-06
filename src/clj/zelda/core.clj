@@ -6,15 +6,16 @@
 
 (def page
   (html
-   [:head {:title "Zelda"}]
+   [:head {:title "Zelda"}
+    [:link {:rel "stylesheet" :href "style.css"}]]
    [:body {:onload "zelda.core.init();"}
     [:div
-     [:div
+     [:div {:id "player"}
       [:span {:id "hit-points"}
        [:img {:src "images/heart.png"}]]
       "&nbsp;"
       [:span "Inventory: " [:span {:id "inventory"}]]]
-     [:canvas#world]
+     [:div {:id "map" } [:canvas#world]]
      [:script {:src "js/dev.js"}]]]))
 
 (defroutes app-routes
