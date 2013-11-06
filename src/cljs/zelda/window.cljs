@@ -71,6 +71,17 @@
   (set! (.-innerHTML inventory-html)
         (apply str (map #(image-for %) inventory))))
 
+(defn- fill-pickup-items [items]
+  (doseq [[item [x y]] items]
+    (let [image (js/Image.)
+          offset (/ @cell-size 4)
+          half (/ @cell-size 2)
+          window-x (+ offset (* x @cell-size))
+          window-y (+ offset (* y @cell-size))]
+      (set! (.-onload image)
+            #(.drawImage context image window-x window-y half half))
+      (set! (.-src image) (str "images/" (images item))))))
+
 (defn- init-window []
   (set! (.-width canvas) (* @cell-size width))
   (set! (.-height canvas) (* @cell-size height))
@@ -80,13 +91,14 @@
   (go
    (loop []
      (let [{:keys [flash strike player obstacles enemies enemy-flash
-                   inventory]} (<! draw)]
+                   inventory pickup-items]} (<! draw)]
        (fill-empty)
        (fill-square (.-coord player) player-color)
        (fill obstacles obstacle-color)
        (fill enemies enemy-color)
        (fill-hp-meter (.-hp player))
        (fill-inventory inventory)
+       (fill-pickup-items pickup-items)
        (when flash
          (fill-square flash flash-color))
        (when enemy-flash

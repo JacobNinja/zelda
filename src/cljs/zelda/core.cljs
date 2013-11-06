@@ -51,8 +51,9 @@
                (not (collides-with-obstacles? obstacles (.-coord next-player))))
       {:player next-player})))
 
-(defhandler strike [key player]
-  {:strike (when (= key :space)
+(defhandler strike [key player inventory]
+  {:strike (when (and (= key :space)
+                      (inventory :sword))
              (adjust-position (.-coord player) (.-direction player)))})
 
 (defhandler player-collision-check [enemies player]
@@ -65,7 +66,7 @@
     {:flash nil}))
 
 (defhandler game-over [player]
-  (if (zero? (.-hp player))
+  (when (zero? (.-hp player))
     {:game-over "You died!"}))
 
 (defhandler strike-collision-check [enemies strike]
@@ -74,6 +75,13 @@
       {:enemies (remove swing-collision enemies)
        :enemy-flash swing-collision}
       {:enemy-flash nil})))
+
+(defhandler pickup [pickup-items player inventory]
+  (when-let [item-collisions
+             (map first (filter (fn [[_ coord]] 
+                                  (= coord (.-coord player))) pickup-items))]
+    {:inventory (into inventory item-collisions)
+     :pickup-items (apply dissoc (cons pickup-items item-collisions))}))
 
 (deftype Player [coord hp direction]
   Object
@@ -86,13 +94,16 @@
       (Player. back-coord hp direction)
       this))
   (hit [this amount]
-    (Player. coord (- hp amount) direction)))
+    (Player. coord (- hp amount) direction))
+  (toString [this]
+    (str coord)))
 
 (defn- init-env [env]
   (merge env 
          {:player (Player. [5 5] 3 :right)
-          :inventory [:sword]
+          :inventory #{}
           :obstacles [[8 8]]
+          :pickup-items {:sword [1 1]}
           :enemies [[12 5]]}))
 
 (defn- game-loop [draw initial-env]
@@ -106,6 +117,7 @@
                         strike
                         strike-collision-check
                         player-collision-check
+                        pickup
                         game-over)]
        (if-not (env :game-over)
          (recur (or (<! (timeout 200)) next-env))
