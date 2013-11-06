@@ -6,7 +6,8 @@
             [goog.events.KeyCodes :as key-codes]
             [zelda.window]
             [clojure.set :refer [intersection]])
-  (:require-macros [cljs.core.async.macros :refer [go]]))
+  (:require-macros [cljs.core.async.macros :refer [go]]
+                   [zelda.macros :refer [defhandler]]))
 
 (def keyboard (goog.events.KeyHandler. js/document))
 (def keyboard-chan (chan (async/sliding-buffer 1)))
@@ -41,41 +42,38 @@
     :down [x (inc y)]
     nil))
 
-(defn- adjust-player [env]
-  (let [next-player (.tick (env :player) (env :key))]
-    (if (and (in-bounds? (env :dimensions) (.-coord next-player))
-             (not (collides-with-obstacles? (env :obstacles) (.-coord next-player))))
-      (assoc env :player next-player)
-      env)))
-
-(defn- strike [env]
-  (if (= (env :key) :space)
-    (assoc env :strike (adjust-position (.-coord (env :player)) (.-direction (env :player))))
-    (dissoc env :strike)))
-
 (defn- adjust-key [env keyboard-check]
   (assoc env :key keyboard-check))
 
-(defn- player-collision-check [env]
-  (if-let [player-collisions ((set (env :enemies)) (.-coord (env :player)))]
-    (let [next-player (-> (env :player)
+(defhandler adjust-player [player key dimensions obstacles]
+  (let [next-player (.tick player key)]
+    (when (and (in-bounds? dimensions (.-coord next-player))
+               (not (collides-with-obstacles? obstacles (.-coord next-player))))
+      {:player next-player})))
+
+(defhandler strike [key player]
+  {:strike (when (= key :space)
+             (adjust-position (.-coord player) (.-direction player)))})
+
+(defhandler player-collision-check [enemies player]
+  (if-let [player-collisions ((set enemies) (.-coord player))]
+    (let [next-player (-> player
                            .tickBackwards
                            (.hit 1))]
-      (merge env {:player next-player
-                  :flash (.-coord next-player)}))
-    (dissoc env :flash)))
+      {:player next-player
+       :flash (.-coord next-player)})
+    {:flash nil}))
 
-(defn- game-over [env]
-  (if (zero? (.-hp (env :player)))
-    (assoc env :game-over "You died!")
-    env))
+(defhandler game-over [player]
+  (if (zero? (.-hp player))
+    {:game-over "You died!"}))
 
-(defn- strike-collision-check [env]
-  (let [swing-collision (intersection (set (env :enemies)) #{(env :strike)})]
+(defhandler strike-collision-check [enemies strike]
+  (let [swing-collision (intersection (set enemies) #{strike})]
     (if-not (empty? swing-collision)
-      (merge env {:enemies (remove swing-collision (env :enemies))
-                  :enemy-flash swing-collision})
-      (dissoc env :enemy-flash))))
+      {:enemies (remove swing-collision enemies)
+       :enemy-flash swing-collision}
+      {:enemy-flash nil})))
 
 (deftype Player [coord hp direction]
   Object
