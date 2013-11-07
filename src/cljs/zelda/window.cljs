@@ -83,9 +83,10 @@
       (set! (.-src image) (str "images/" (images item))))))
 
 (defn- init-window []
+  (reset! cell-size (- (/ (.-innerHeight js/window) height) 2))
   (set! (.-width canvas) (* @cell-size width))
   (set! (.-height canvas) (* @cell-size height))
-  (fill-empty))  
+  (fill-empty))
 
 (defn- draw-loop [draw]
   (go
@@ -108,9 +109,6 @@
      (recur))))
 
 (defn init [draw]
-  (reset! cell-size 
-          (- (/ (- (.-innerHeight js/window) 
-                   (.-offsetHeight hit-points)) height) 2))
   (init-window)
   (draw-loop draw)
   {:dimensions [width height]})

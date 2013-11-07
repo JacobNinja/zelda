@@ -4,11 +4,11 @@
   (:require [compojure.handler :as handler]
             [compojure.route :as route]))
 
-(def page
+(defn page [game-ns]
   (html
    [:head {:title "Zelda"}
     [:link {:rel "stylesheet" :href "style.css"}]]
-   [:body {:onload "zelda.core.init();"}
+   [:body {:onload (str "zelda." game-ns".init();")}
     [:div
      [:div {:id "player"}
       [:span {:id "hit-points"}
@@ -19,7 +19,8 @@
      [:script {:src "js/dev.js"}]]]))
 
 (defroutes app-routes
-  (GET "/" [] page)
+  (GET "/" [] (page "core"))
+  (GET "/ui" [] (page "ui"))
   (route/resources "/")
   (route/not-found "Not found"))
 
