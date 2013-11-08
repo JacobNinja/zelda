@@ -9,7 +9,7 @@
 
 (def border-color "#cdcdcd")
 (def empty-color "#eee")
-(def player-color "#000000")
+(def player-color "#00cc00")
 (def obstacle-color "#cc0000")
 (def enemy-color "0000ff")
 (def flash-color "#fff000")
